@@ -1,23 +1,42 @@
 import matplotlib
-
 matplotlib.use('Agg')
+
 import numpy as np
+import glob
+import cv2
+
 from keras import backend as K
 from keras import utils as keras_utils
 from keras import optimizers
 from keras import datasets
 from swiss_army_tensorboard import tfboard_loggers
-from tqdm import tqdm
-from cdcgan import cdcgan_models, cdcgan_utils
 
-BATCH_SIZE = 128
+from tqdm import tqdm
+
+import cdcgan_models, cdcgan_utils
+
+BATCH_SIZE = 32
 EPOCHS = 100
 
 # Load & Prepare MNIST
 
-(X_train, y_train), (_, _) = datasets.mnist.load_data()
+classes = glob.glob('../mark_db/' + '*')
+
+X_train = []
+y_train = []
+
+for j in range(len(classes)):
+    for i in glob.glob(classes[j] + '/**/*.png', recursive=True):
+        img = cv2.imread(i, cv2.IMREAD_COLOR)
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        img = cv2.resize(img, (64, 64))
+        X_train.append(img)
+        y_train.append(j)
+
+X_train = np.stack(X_train)
+y_train = np.stack(y_train)
+
 X_train = cdcgan_utils.transform_images(X_train)
-X_train = X_train[:, :, :, None]
 
 y_train = keras_utils.to_categorical(y_train, 100)
 
@@ -35,7 +54,7 @@ print("Combined:")
 GD = cdcgan_models.generator_containing_discriminator(G, D)
 GD.summary()
 
-optimizer = optimizers.Adam(0.0002, 0.5)
+optimizer = optimizers.Adam(0.00002, 0.5)
 
 G.compile(loss='binary_crossentropy', optimizer=optimizer)
 GD.compile(loss='binary_crossentropy', optimizer=optimizer)
@@ -56,7 +75,7 @@ nb_of_iterations_per_epoch = int(X_train.shape[0] / BATCH_SIZE)
 print("Number of iterations per epoch: {0}".format(nb_of_iterations_per_epoch))
 
 for epoch in range(EPOCHS):
-    pbar = tqdm(desc="Epoch: {0}".format(epoch), total=X_train.shape[0])
+    pbar = tqdm(desc="Epoch: {0}/{1}".format(epoch, EPOCHS), total=X_train.shape[0])
 
     g_losses_for_epoch = []
     d_losses_for_epoch = []
@@ -70,9 +89,7 @@ for epoch in range(EPOCHS):
         generated_images = G.predict([noise, label_batch], verbose=0)
 
         if i % 20 == 0:
-            image_grid = cdcgan_utils.generate_mnist_image_grid(G,
-                                                                title="Epoch {0}, iteration {1}".format(epoch,
-                                                                                                        iteration))
+            image_grid = cdcgan_utils.generate_mnist_image_grid(G, title="Epoch {0}, iteration {1}".format(epoch, iteration))
             cdcgan_utils.save_generated_image(image_grid, epoch, i, "../images/generated_mnist_images_per_iteration")
             image_logger.log_images("generated_mnist_images_per_iteration", [image_grid], iteration)
 

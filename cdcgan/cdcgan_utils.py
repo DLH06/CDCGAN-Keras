@@ -14,13 +14,13 @@ def combine_images(generated_images):
     num_images = generated_images.shape[0]
     new_width = int(math.sqrt(num_images))
     new_height = int(math.ceil(float(num_images) / new_width))
-    grid_shape = generated_images.shape[1:3]
-    grid_image = np.zeros((new_height * grid_shape[0], new_width * grid_shape[1]), dtype=generated_images.dtype)
+    grid_shape = generated_images.shape[1:4]
+    grid_image = np.zeros((new_height * grid_shape[0], new_width * grid_shape[1], 3), dtype=generated_images.dtype)
     for index, img in enumerate(generated_images):
         i = int(index / new_width)
         j = index % new_width
         grid_image[i * grid_shape[0]:(i + 1) * grid_shape[0], j * grid_shape[1]:(j + 1) * grid_shape[1]] = \
-            img[:, :, 0]
+            img[:, :, :]
     return grid_image
 
 
@@ -45,9 +45,9 @@ def generate_images(generator, nb_images: int, label: int):
 def generate_mnist_image_grid(generator, title: str = "Generated images"):
     generated_images = []
 
-    for i in range(10):
+    for i in range(2):
         noise = generate_noise((10, 100))
-        label_input = generate_condition_embedding(i, 10)
+        label_input = generate_condition_embedding(i, 100)
         gen_images = generator.predict([noise, label_input], verbose=0)
         generated_images.extend(gen_images)
 
@@ -58,7 +58,7 @@ def generate_mnist_image_grid(generator, title: str = "Generated images"):
     fig = plt.figure()
     ax = fig.add_subplot(1, 1, 1)
     ax.axis("off")
-    ax.imshow(image_grid, cmap="gray")
+    ax.imshow(image_grid)
     ax.set_title(title)
     fig.canvas.draw()
 
