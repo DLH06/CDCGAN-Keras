@@ -46,7 +46,7 @@ def generate_mnist_image_grid(generator, title: str = "Generated images"):
 
     for i in range(2):
         noise = generate_noise((2, 100))
-        label_input = generate_condition_embedding(i, 100)
+        label_input = generate_condition_embedding(i, 2)
         gen_images = generator.predict([noise, label_input], verbose=0)
         generated_images.extend(gen_images)
 

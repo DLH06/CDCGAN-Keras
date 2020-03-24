@@ -15,8 +15,8 @@ from tqdm import tqdm
 
 import cdcgan_models, cdcgan_utils
 
-BATCH_SIZE = 32
-EPOCHS = 100
+BATCH_SIZE = 8
+EPOCHS = 50
 
 # Load & Prepare MNIST
 
@@ -52,7 +52,7 @@ print("Combined:")
 GD = cdcgan_models.generator_containing_discriminator(G, D)
 GD.summary()
 
-optimizer = optimizers.Adam(0.00002, 0.5)
+optimizer = optimizers.Adam(1e-4, 0.5)
 
 G.compile(loss='binary_crossentropy', optimizer=optimizer)
 GD.compile(loss='binary_crossentropy', optimizer=optimizer)
