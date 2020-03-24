@@ -34,8 +34,6 @@ for j in range(len(classes)):
         y_train.append(j)
 
 X_train = np.stack(X_train)
-y_train = np.stack(y_train)
-
 X_train = cdcgan_utils.transform_images(X_train)
 
 y_train = keras_utils.to_categorical(y_train, 100)

@@ -4,8 +4,8 @@ import subprocess
 
 import cv2
 import matplotlib
-
 matplotlib.use('Agg')
+
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -19,8 +19,7 @@ def combine_images(generated_images):
     for index, img in enumerate(generated_images):
         i = int(index / new_width)
         j = index % new_width
-        grid_image[i * grid_shape[0]:(i + 1) * grid_shape[0], j * grid_shape[1]:(j + 1) * grid_shape[1]] = \
-            img[:, :, :]
+        grid_image[i * grid_shape[0]:(i + 1) * grid_shape[0], j * grid_shape[1]:(j + 1) * grid_shape[1], :] = img[:, :, :]
     return grid_image
 
 
@@ -46,7 +45,7 @@ def generate_mnist_image_grid(generator, title: str = "Generated images"):
     generated_images = []
 
     for i in range(2):
-        noise = generate_noise((10, 100))
+        noise = generate_noise((2, 100))
         label_input = generate_condition_embedding(i, 100)
         gen_images = generator.predict([noise, label_input], verbose=0)
         generated_images.extend(gen_images)
